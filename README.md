@@ -21,4 +21,4 @@ Make sure Tesseract-OCR is installed before doing anything.
 
 It'll take a little bit for the GUI to be done. Nothing more than a week though. In it's current state it can go through the mirror dungeon and do fine. 
 
-MAKE SURE TO BE FULL SCREEN WINDOWED AT 1920x1080 BEFORE STARTING
+MAKE SURE TO BE FULL SCREEN WINDOWED AT 1920x1080 BEFORE STARTING!
