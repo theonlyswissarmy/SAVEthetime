@@ -4,7 +4,7 @@ import time, pytesseract, pyautogui, keyboard, cv2, os
 screenwid, screenlen = pyautogui.size()
 
 sinners = [0] * 6
-sinselected = False
+sinselected = True
 money = 0
 
 
@@ -97,7 +97,8 @@ def pthenenter():
 
 def mainfight():
     pyautogui.moveTo(1789, 121)
-    pixp = (252, 154, 0)  # pause color
+    time.sleep(1)
+    pixp = pyautogui.pixel(1789, 121)  # pause color
     pixf = (131, 91, 39)  # fork color
 
     while 1:
@@ -107,7 +108,7 @@ def mainfight():
         pix = pyautogui.pixel(1789, 121)
         if not pix == pixp and not pix == pixf:  # compare curcolor to others to see if still fight
             print("FIRST PASS")
-            time.sleep(2)  # edge case
+            time.sleep(1)  # edge case
             pyautogui.moveTo(1789, 121)
             pix = pyautogui.pixel(1789, 121)
             try:
@@ -165,10 +166,13 @@ def getevent() -> bool:
                 pyautogui.click(903, 465)
                 time.sleep(.3)
             if pyautogui.pixelMatchesColor(1674, 183, (253, 96, 0)):
+                print("SHOP")
                 shop()
             else:
+                print("EVENT")
                 event()
         except pyautogui.ImageNotFoundException:
+            print("FAIL")
             return False
     return True
 
@@ -201,9 +205,10 @@ def event() -> int:
         probs = ["ery", "igh", "ormal", "Low"]
         breakout = False
         time.sleep(1)
-        im = pyautogui.screenshot(region=(initre, 259, 700, 160))
+        im = pyautogui.screenshot("screen.png", region=(initre, 259, 700, 160))
         text = pytesseract.image_to_string(im)
-        print(text)
+        print(text + " <- This is our text")
+        time.sleep(1)
         if "E.G." in text:
             pyautogui.click(initre + 100, 359)
             time.sleep(2.5)
@@ -243,6 +248,7 @@ def event() -> int:
         else:
             print("No ego gift found?")
             if pyautogui.pixelMatchesColor(1793, 914, (150, 50, 35)):
+                print("Done?")
                 clickhere((1793, 914))  # it turns out we were done
                 return 1
             if keyboard.is_pressed("q"):
@@ -268,17 +274,18 @@ def infightcheck() -> bool:
 def move():
     print("MOVE")
     try:
-        res = pyautogui.locateOnScreen("clockface3.png", confidence=.6)
+        res = pyautogui.locateOnScreen("clockface3.png", confidence=.85)
         selwid, sellen = pyautogui.center(res)
         print("We found the image")
         pyautogui.moveTo(selwid, sellen)
         selwid = selwid + 400
         sellen = sellen - 220
+
         for i in range(3):
             try:
                 pyautogui.click(selwid, sellen)  # we click on the icon
                 time.sleep(1)
-                res = pyautogui.locateOnScreen("enter.png", confidence=.6)  # if valid enter will be found
+                res = pyautogui.locateOnScreen("enter.png", confidence=.8)  # if valid enter will be found
                 print("entering")
                 clickhere(res)
                 break
@@ -295,6 +302,7 @@ pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesserac
 startbot()
 time.sleep(5)
 while not keyboard.is_pressed('q'):
+    fail = True
     moveck = move()
     print("EXITED MOVE")
     eventck = getevent()
@@ -305,6 +313,22 @@ while not keyboard.is_pressed('q'):
         if not fightck:
             if not isvictory():
                 print("adjusting zoom")
+                for i in range(6):
+                    pyautogui.scroll(1000)
+                    time.sleep(.2)
+                for i in range(20):
+                    try:
+                        pyautogui.locateOnScreen("clockface3.png", confidence=.9)
+                        fail = False
+                        break
+                    except:
+                        pyautogui.scroll(-1)
+                if fail:
+                    print("Could not find icon, exiting")
+                    exit(0)
+                else:
+                    fail = True
+
     else:
         print("getting zoom right after event")
         pyautogui.scroll(-1)
