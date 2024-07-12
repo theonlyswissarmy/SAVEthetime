@@ -19,3 +19,19 @@ It'll take a little bit for the GUI to be done. Nothing more than a week though.
 MAKE SURE TO BE FULL SCREEN WINDOWED AT 1920x1080 BEFORE STARTING! for now, I'll change some things up later
 
 There's still more than a few kinks to work out with the bot, mainly pertaining to events
+
+Autoshop ideas:
+1. Easy autoshop, just buy as much as possible 
+2. Screenshot every item as we attempt to buy it, try to locate image type, bleed, rupture, sinking, slash, ect. if team is of applicable typ, buy item, if keywordless, reference internal document. (this is probably what im going to do)
+
+autoupgrade ideas
+1. read RGB values, items with higer rgb arent grey, items with lower are, if not grey determine type, than upgrade if possible. Do this for every item.
+2. Select item, if item is a valid selection, determine type, if type applicable, upgrade.
+3. Always 20% heal.
+
+   EVENT ISSUES
+1. everything in event has to be compartmentalized and cleaned. Once we're found to be in an event, determine what stage, then execute that specific stage.
+2. Mess with CV2 thresholding mroe so that we get a better readout more consistantly.
+
+GUI ISSUES.
+don't wanna until event is fixed :(
