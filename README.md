@@ -22,7 +22,7 @@ There's still more than a few kinks to work out with the bot, mainly pertaining 
 
 Autoshop ideas:
 1. Easy autoshop, just buy as much as possible 
-2. Screenshot every item as we attempt to buy it, try to locate image type, bleed, rupture, sinking, slash, ect. if team is of applicable typ, buy item, if keywordless, reference internal document. (this is probably what im going to do)
+2. Screenshot every item as we attempt to buy it, try to locate image type, bleed, rupture, sinking, slash, ect. if team is of applicable type, buy item, if keywordless, reference internal document. (this is probably what im going to do)
 
 autoupgrade ideas
 1. read RGB values, items with higer rgb arent grey, items with lower are, if not grey determine type, than upgrade if possible. Do this for every item.
