@@ -29,7 +29,8 @@ autoupgrade ideas
 2. Select item, if item is a valid selection, determine type, if type applicable, upgrade.
 3. Always 20% heal.
 
-   EVENT ISSUES
+
+EVENT ISSUES
 1. everything in event has to be compartmentalized and cleaned. Once we're found to be in an event, determine what stage, then execute that specific stage.
 2. Mess with CV2 thresholding mroe so that we get a better readout more consistantly.
 
