@@ -31,8 +31,7 @@ autoupgrade ideas
 
 
 EVENT ISSUES
-1. everything in event has to be compartmentalized and cleaned. Once we're found to be in an event, determine what stage, then execute that specific stage.
-2. Mess with CV2 thresholding mroe so that we get a better readout more consistantly.
+1. Mess with CV2 thresholding mroe so that we get a better readout more consistantly.
 
 GUI ISSUES.
 don't wanna until event is fixed :(
