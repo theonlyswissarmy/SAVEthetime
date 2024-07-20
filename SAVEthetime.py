@@ -11,7 +11,7 @@ money = 0
 
 
 # TO BE IMPLEMENTED, finds window and adjusts values and images to confrom to window resolution
-def resadjust():
+def adjustres():
     return
 
 
@@ -28,7 +28,7 @@ def selectsinners():
     initx = 434
     inity = 341
     while 1:
-        print("Are sinners already selected? y/n")
+        print("Are unwanted sinners already selected? y/n")
         select = input()
         if select == "y":
             return
@@ -48,11 +48,19 @@ def selectsinners():
         time.sleep(1)
 
 
-def startbot():
+def startbot():  # this starts the main bot, allows user to select sinner, or not
+    global sinners, sinselected
     sincount = [0] * 13
     print("STARTING SAVE THE TIME. INPUT SINNER NUMBERS (type 0 to leave unused) \n")
     print("make sure to be in the first hex in dungeon\n")
     x = 0
+    while 1:
+        selsin = input("are sinners already selected? y/n")
+        if selsin == "y":
+            sinselected = True
+            return
+        if selsin == "n":
+            break
     while x < 6:
         while 1:
             selsin = input("input sinner " + str(x + 1) + " number \n")
@@ -109,6 +117,8 @@ def infightcheck() -> bool:
 
 
 def shop():
+    print("this still needs to be done, figure it out soon dipshit")
+    wait = input("press enter to continue")
     # get money from screen
     # read and select ego gifts with compatable skill apps until out of money
     return
@@ -138,7 +148,7 @@ def mainfight():
             pyautogui.moveTo(1789, 121)
             if not infightcheck():
                 print("DONE FIGHTING")
-                time.sleep(6)
+                time.sleep(8)
                 pyautogui.click(944, 454)  # extra stuff for ego gift
                 pyautogui.sleep(.5)
                 pyautogui.click(1696, 850)
@@ -186,17 +196,16 @@ def getevent() -> bool:
             else:
                 print("EVENT")
                 while 1:
-                    time.sleep(5)
                     match (deteventstage(0)):
                         case 0:  # we definitely left the event
                             break
-                        case 1: # in text/choices section
+                        case 1:  # in text/choices section
                             time.sleep(3)
                             dotext()
-                        case 2: # in sinner probabilities
+                        case 2:  # in sinner probabilities
                             sinprob()
                         case 3:  # the red button was present
-                            pass # TO DO LATER
+                            pass
 
         except pyautogui.ImageNotFoundException:
             print("FAIL")
@@ -218,13 +227,14 @@ def SAVEthetime():
 
 
 def deteventstage(ret) -> int:
-    if istext():
+    if eventend():
+        print("we should exit now")
+        ret = 3
+    elif istext():
         print("DO TEXT")
         ret = 1
-    if isprob():
+    elif isprob():
         ret = 2
-    if eventend():
-        ret = 3
     print(str(ret))
     return ret
 
@@ -241,7 +251,7 @@ def dotext():
     addy = 0
     for i in range(3):
         time.sleep(1)
-        im = pyautogui.screenshot("screen.png", region=(1038, 259 + addy, 700, 160))
+        pyautogui.screenshot("screen.png", region=(1038, 259 + addy, 700, 160))
         readthis = cv2.imread("screen.png", cv2.IMREAD_GRAYSCALE)
         text = pytesseract.image_to_string(readthis, config='--psm 6')
         print(text + " <- This is our text")
@@ -256,15 +266,18 @@ def dotext():
             if keyboard.is_pressed("q"):
                 exit(0)
             if i == 2:
-                pyautogui.click(1038, 975)  # select first option
+                print("we are here!")
+                pyautogui.moveTo(1038, 279)
+                pyautogui.click(1038, 279)  # select first option
+                time.sleep(3)
                 break
             else:
-                addy = addy + 200 # read the next block
+                addy = addy + 200  # read the next block
     print("Returning")
     return 0
 
 
-def isprob()->bool:
+def isprob() -> bool:
     try:
         pyautogui.locateOnScreen("advantage.png", confidence=.8)
         return True
@@ -272,19 +285,22 @@ def isprob()->bool:
         return False
 
 
-def sinprob():
+def sinprob(): # this def handles the part of events where you decide which sinner should perform a task
     breakout = False
-    probs = ["ery", "igh", "ormal", "Low"]
+    probs = ["ery H", "igh", "ormal", "Low"]
     for prob in probs:
         initre = 112
         for i in range(12):
+            if keyboard.is_pressed('q'):
+                exit(0)
             pyautogui.click(initre, 939)
             time.sleep(.5)
             pyautogui.screenshot("screen.png", region=(1147, 716, 600, 60))
             img = cv2.imread("screen.png")
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            img = cv2.cvtColor(img, cv2.IMREAD_GRAYSCALE)
             text = pytesseract.image_to_string(img)
             print(prob + " " + text)
+            time.sleep(1)
             if prob in text:  # find a good probability
                 breakout = True
                 break
@@ -296,30 +312,31 @@ def sinprob():
         pyautogui.click(1705, 931)
     time.sleep(5)
     clickonskip()  # we try to skip the next few batches of text
+    clickonskip()
     return 0  # hopefully we're done with the event probability
 
 
 def eventend() -> bool:
-    if pyautogui.pixelMatchesColor(1793, 914, (150, 50, 35)):
+    if pyautogui.pixelMatchesColor(1692, 885, (160, 50, 35), tolerance=20):
         print("Done?")
-        clickhere((1793, 914))  # it turns out we're done
+        pyautogui.click(1793, 914)  # it turns out we're done
         return True
     return False
 
 
-def grabEGO():
+def grabEGO() -> bool:
     try:
         res = pyautogui.locateOnScreen("EGOconfirm.png", confidence=.8)
         clickhere(res)
     except pyautogui.ImageNotFoundException:
-        try: # this is really bad form. this does theme packs
+        try:  # this is really bad form. this does theme packs
             res = pyautogui.locateOnScreen("starlightgain.png", confidence=.8)
             pyautogui.moveTo(res[0], res[1])
-            pyautogui.drag(0,300,1, button='left')
+            pyautogui.drag(0, 300, 1, button='left')
         except pyautogui.ImageNotFoundException:
-            return
-    pyautogui.moveTo(950,540)
-    return
+            return False
+    pyautogui.moveTo(950, 540)
+    return True
 
 
 def move():
@@ -336,7 +353,7 @@ def move():
     for i in range(3):
         try:
             pyautogui.click(selwid, sellen)  # we click on the icon
-            time.sleep(1)
+            time.sleep(.8)
             res = pyautogui.locateOnScreen("enter.png", confidence=.8)  # if valid enter will be found
             print("entering")
             clickhere(res)
@@ -347,44 +364,72 @@ def move():
     return 0
 
 
-pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
-#startbot()
-time.sleep(5)
-grabEGO()
-while not keyboard.is_pressed('q'):
-    fail = True
-    moveck = move()
-    print("EXITED MOVE")
-    eventck = getevent()
-    print("EXITED EVENT")
-    fightck = infightcheck()
-    grabEGO()
-    if not fightck:
-        if not eventck:
-            if not isvictory():
-                print("adjusting zoom")
-                for i in range(6):
-                    pyautogui.scroll(1000)
-                    time.sleep(.2)
-                for i in range(20):
-                    if findclockface(.9):
-                        fail = False
-                        break
-                    pyautogui.scroll(-1)
-                    print("zooming out " + str(i))
-                    time.sleep(.3)
-                if fail:
-                    print("Could not find icon, exiting")
-                    exit(0)
-                else:
-                    fail = True
-            else:
-                exit(0)  # We won!
-        else:
-            print("getting zoom right after event")
+def adjustzoom() -> bool:
+    for look in range(3):
+        pyautogui.moveTo(590 + (400 * look), 540)
+        for i in range(6):
+            pyautogui.scroll(1000)
+            time.sleep(.2)
+
+        for i in range(6):
+            if findclockface(.9):
+                return False
             pyautogui.scroll(-1)
-            pyautogui.scroll(1)
+            time.sleep(.2)
+        print("zooming out " + str(i))
+        time.sleep(.3)
+    return True
 
 
-    else: # we're in a fight
-        mainfight()
+def mainbot():
+    startbot()
+    time.sleep(5)
+    grabEGO()
+    fail = True
+    while not keyboard.is_pressed('q'):
+        move()
+        print("EXITED MOVE")
+        eventck = getevent()
+        print("EXITED EVENT")
+        fightck = infightcheck()
+        egochk = grabEGO()
+        if not fightck:
+            if not eventck or not egochk:
+                if not isvictory():
+
+                    print("looking around and adjusting zoom")
+                    fail = adjustzoom()
+                    if fail or not egochk:
+                        print("Could not find icon, exiting")
+                        exit(0)
+
+                else:
+                    exit(0)  # We won!
+            else:
+                print("getting zoom right after event")
+                pyautogui.scroll(-1)
+                pyautogui.scroll(1)
+        else:  # we're in a fight
+            mainfight()
+
+
+def dolux():
+    time.sleep(3)
+    while 1:
+        if infightcheck():
+            mainfight()
+            time.sleep(3)
+        else:
+            return
+
+
+pytesseract.pytesseract.tesseract_cmd = 'C:/Program Files/Tesseract-OCR/tesseract.exe'
+if __name__ == "__main__":
+    while 1:
+        do = input("type 1 to just fight, 2 to start the bot")
+        if do == "1":
+            dolux()
+            exit(0)
+        elif do == "2":
+            mainbot()
+            exit(0)
