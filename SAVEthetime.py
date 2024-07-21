@@ -1,11 +1,12 @@
 from PIL import Image, ImageEnhance, ImageFilter, ImageGrab
-import time, pytesseract, pyautogui, keyboard, cv2, os
+import time, pytesseract, pyautogui, keyboard, cv2, os, tkinter
 
 from pyscreeze import Box
 
 screenwid, screenlen = pyautogui.size()
 
-sinners = [0] * 6
+inGUI = False  # variable which denotes if we're using the GUI or not
+sinners = [0] * 6  # the sinners we want to use
 sinselected = False
 money = 0
 
@@ -23,18 +24,43 @@ def clickonskip():
     return
 
 
-def selectsinners():
+# stops user from closing a window
+def disable_event():
+    pass
+
+
+# def to open a popup for the GUI, exits on button press
+def openapopup(poptext):
+    popup = tkinter.Toplevel()
+    popup.wm_title("WARNING")
+    var = tkinter.IntVar()
+    popup.geometry("250x250")
+    popup.protocol("WM_DELETE_WINDOW", disable_event)
+    Label = tkinter.Label(popup, text=poptext)
+    exitbutton = tkinter.Button(popup, text="OK", command=lambda: var.set(1))
+    Label.pack()
+    exitbutton.pack()
+    popup.resizable(False, False)
+    popup.wait_variable(var)
+    print("past wait")
+    popup.destroy()
+
+
+def selectsinners():  # this bot sets the sinners via the console
     global sinners
-    initx = 434
-    inity = 341
+    initx = 434  # x value where sinner cards start
+    inity = 341  # y value where sinner cards start
     while 1:
-        print("Are unwanted sinners already selected? y/n")
-        select = input()
-        if select == "y":
-            return
-        elif select == "n":
-            break
-        print("bad input, please only type either y or n")
+        if not inGUI:  # use the console to prompt for user input if just in script
+            print("Are unwanted sinners already selected? y/n")
+            select = input()
+            if select == "y":
+                return
+            elif select == "n":
+                break
+            print("bad input, please only type either y or n")
+        else:  # use tkinter to pop up if we're using a gui
+            openapopup("Please make sure all sinners are unselected")
     # pyautogui.click(initx, inity)
     for sinner in sinners:
         addy, addx = 0, 0
@@ -102,7 +128,7 @@ def findclockface(acc) -> Box | None:
         return None
 
 
-def infightcheck() -> bool:
+def infightcheck() -> bool:  # makes sure we're within a fight via 2 unique elements
     try:
         pyautogui.locateOnScreen("fork.png", confidence=.8)
         print("located fork")
@@ -116,14 +142,19 @@ def infightcheck() -> bool:
             return False
 
 
+# future autoshop function
 def shop():
-    print("this still needs to be done, figure it out soon dipshit")
-    wait = input("press enter to continue")
+    if (inGUI):
+        openapopup("Autoshop is disabled, press OK when finishsed")
+    else:
+        print("this still needs to be done, figure it out soon dipshit")
+        input("press enter to continue")
     # get money from screen
     # read and select ego gifts with compatable skill apps until out of money
     return
 
 
+# hit p, then hit enter
 def pthenenter():
     pyautogui.press("p", 1, .1)
     pyautogui.press("enter", 1, .1)
@@ -131,6 +162,7 @@ def pthenenter():
     return
 
 
+# this def is the def that handles simple fights with enemies.
 def mainfight():
     pyautogui.moveTo(1789, 121)
     time.sleep(1)
@@ -163,12 +195,14 @@ def isvictory() -> bool:
     return False
 
 
+# click whereever res is
 def clickhere(res):
     selwid, sellen = pyautogui.center(res)
     pyautogui.click(selwid, sellen)
     return
 
 
+# gets the event type, 1 for success, 2 for select sinenrs in GUI, 3 for shop in GUI
 def getevent() -> bool:
     global sinselected
     time.sleep(.5)
@@ -177,7 +211,6 @@ def getevent() -> bool:
     print("pix 0 = " + str(pix[0]) + " " + str(pix[1]) + " " + str(pix[2]))
     try:
         # NOTE MAKE SURE SINNERS ARE SELECTED VIA SINSELECTED
-
         pyautogui.locateOnScreen("TOBATTLE.png", confidence=.8)
         if not sinselected:  # we havent slected sinners yet!
             selectsinners()
@@ -285,7 +318,7 @@ def isprob() -> bool:
         return False
 
 
-def sinprob(): # this def handles the part of events where you decide which sinner should perform a task
+def sinprob():  # this def handles the part of events where you decide which sinner should perform a task
     breakout = False
     probs = ["ery H", "igh", "ormal", "Low"]
     for prob in probs:
@@ -428,7 +461,8 @@ if __name__ == "__main__":
     while 1:
         do = input("type 1 to just fight, 2 to start the bot")
         if do == "1":
-            dolux()
+            openapopup("testtest test")
+            print("we're here now!")
             exit(0)
         elif do == "2":
             mainbot()
