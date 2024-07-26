@@ -11,6 +11,12 @@ sinselected = False
 money = 0
 
 
+#sets  inGUI to value passed in val
+def setinGUI(val):
+    global inGUI
+    inGUI = val
+
+
 # TO BE IMPLEMENTED, finds window and adjusts values and images to confrom to window resolution
 def adjustres():
     return
@@ -34,19 +40,21 @@ def openapopup(poptext):
     popup = tkinter.Toplevel()
     popup.wm_title("WARNING")
     var = tkinter.IntVar()
-    popup.geometry("250x250")
+    #popup.geometry("250x250")
     popup.protocol("WM_DELETE_WINDOW", disable_event)
     Label = tkinter.Label(popup, text=poptext)
     exitbutton = tkinter.Button(popup, text="OK", command=lambda: var.set(1))
     Label.pack()
     exitbutton.pack()
     popup.resizable(False, False)
+    popup.lift()
     popup.wait_variable(var)
     print("past wait")
     popup.destroy()
 
 
 def selectsinners():  # this bot sets the sinners via the console
+    global inGUI
     global sinners
     initx = 434  # x value where sinner cards start
     inity = 341  # y value where sinner cards start
@@ -60,7 +68,9 @@ def selectsinners():  # this bot sets the sinners via the console
                 break
             print("bad input, please only type either y or n")
         else:  # use tkinter to pop up if we're using a gui
-            openapopup("Please make sure all sinners are unselected")
+            openapopup("Please make sure all sinners are unselected \n"
+                       "press OK to continue")
+
     # pyautogui.click(initx, inity)
     for sinner in sinners:
         addy, addx = 0, 0
@@ -74,8 +84,20 @@ def selectsinners():  # this bot sets the sinners via the console
         time.sleep(1)
 
 
+# this def takes in entry boxes from the GUI and loads their values into the sinners array
+def loadinSinners(entries) -> bool:
+    for i in range(6):
+        for j in range(12):
+            if entries[j].get() == i:
+                sinners[i] = j
+    if sinners[0] == 0:
+        print("No sinners selected")
+        return False
+    return True
+
+
 def startbot():  # this starts the main bot, allows user to select sinner, or not
-    global sinners, sinselected
+    global sinners, sinselected, inGUI
     sincount = [0] * 13
     print("STARTING SAVE THE TIME. INPUT SINNER NUMBERS (type 0 to leave unused) \n")
     print("make sure to be in the first hex in dungeon\n")
@@ -184,6 +206,7 @@ def mainfight():
                 pyautogui.click(944, 454)  # extra stuff for ego gift
                 pyautogui.sleep(.5)
                 pyautogui.click(1696, 850)
+                time.sleep(1.5)
                 return
         print("STILL FIGHTING")
 
@@ -228,12 +251,18 @@ def getevent() -> bool:
                 shop()
             else:
                 print("EVENT")
+                first = 0;
                 while 1:
                     match (deteventstage(0)):
                         case 0:  # we definitely left the event
-                            break
+                            print("DONE WITH EVENT")
+                            if first == 1:
+                                break
+                            else:
+                                clickonskip()
+                                first = first + 1
                         case 1:  # in text/choices section
-                            time.sleep(3)
+                            #time.sleep(3)
                             dotext()
                         case 2:  # in sinner probabilities
                             sinprob()
@@ -243,6 +272,7 @@ def getevent() -> bool:
         except pyautogui.ImageNotFoundException:
             print("FAIL")
             return False
+    print("Returing True")
     return True
 
 
@@ -263,11 +293,11 @@ def deteventstage(ret) -> int:
     if eventend():
         print("we should exit now")
         ret = 3
+    elif isprob():
+        ret = 2
     elif istext():
         print("DO TEXT")
         ret = 1
-    elif isprob():
-        ret = 2
     print(str(ret))
     return ret
 
@@ -427,21 +457,23 @@ def mainbot():
         fightck = infightcheck()
         egochk = grabEGO()
         if not fightck:
-            if not eventck or not egochk:
-                if not isvictory():
+            print("wasn't a fight")
+            if not eventck:
+                if not egochk:
+                    if not isvictory():
+                        print("looking around and adjusting zoom")
+                        fail = adjustzoom()
+                        if fail and not egochk:
+                            print("Could not find icon, exiting")
+                            exit(0)
 
-                    print("looking around and adjusting zoom")
-                    fail = adjustzoom()
-                    if fail or not egochk:
-                        print("Could not find icon, exiting")
-                        exit(0)
-
-                else:
-                    exit(0)  # We won!
+                    else:
+                        exit(0)  # We won!
             else:
                 print("getting zoom right after event")
                 pyautogui.scroll(-1)
                 pyautogui.scroll(1)
+
         else:  # we're in a fight
             mainfight()
 
