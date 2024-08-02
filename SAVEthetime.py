@@ -345,6 +345,12 @@ def dotext():
     return 0
 
 
+# def that determines if we're in a load screen
+def isloading() -> bool:
+    return False
+
+
+#def that determines if we're in a situation where sinner probabilities are being used.
 def isprob() -> bool:
     try:
         pyautogui.locateOnScreen("advantage.png", confidence=.8)
@@ -392,7 +398,7 @@ def eventend() -> bool:
     return False
 
 
-def grabEGO() -> bool:
+def grabEGO() -> bool: # def to grad EGO at the end of fights or a dungeon, mainly hits confimr atm
     try:
         res = pyautogui.locateOnScreen("EGOconfirm.png", confidence=.8)
         clickhere(res)
@@ -407,7 +413,7 @@ def grabEGO() -> bool:
     return True
 
 
-def move():
+def move(): # this def locates your icon, and moves if it cfan
     print("MOVE")
     res = findclockface(.85)
     if res is None:
@@ -432,7 +438,7 @@ def move():
     return 0
 
 
-def adjustzoom() -> bool:
+def adjustzoom() -> bool: # if the icon hasn't been found we adjust the zoom until we can
     for look in range(3):
         pyautogui.moveTo(590 + (400 * look), 540)
         for i in range(6):
@@ -449,7 +455,7 @@ def adjustzoom() -> bool:
     return True
 
 
-def mainbot():
+def mainbot(): # the main loop for the bot, in GUI
     startbot()
     time.sleep(5)
     grabEGO()
@@ -498,7 +504,7 @@ if __name__ == "__main__":
     while 1:
         do = input("type 1 to just fight, 2 to start the bot")
         if do == "1":
-            openapopup("testtest test", True)
+            dolux()
             print("we're here now!")
             exit(0)
         elif do == "2":
