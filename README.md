@@ -21,6 +21,8 @@ MAKE SURE TO BE FULL SCREEN WINDOWED AT 1920x1080 BEFORE STARTING! for now, I'll
 
 There's still more than a few kinks to work out with the bot, mainly pertaining to events
 
+I have a star now, I've never been so humbled and so terrified, Im sorry this isn't better than it is. Once I got the main bit working compiling everything into its own little contained thing took more effort than I thought it would.
+
 Autoshop ideas:
 1. Easy autoshop, just buy as much as possible 
 2. Screenshot every item as we attempt to buy it, try to locate image type, bleed, rupture, sinking, slash, ect. if team is of applicable type, buy item, if keywordless, reference internal document. (this is probably what im going to do)
