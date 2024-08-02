@@ -12,9 +12,16 @@ money = 0
 
 
 #sets  inGUI to value passed in val
-def setinGUI(val):
+def setinGUI(val: bool):
     global inGUI
     inGUI = val
+
+
+# takes in a batch of sinners passsed from somewhere else
+def sinnerintake(newsin: list):
+    global sinners
+    for i in range(6):
+        sinners[i] = newsin[i]
 
 
 # TO BE IMPLEMENTED, finds window and adjusts values and images to confrom to window resolution
@@ -35,22 +42,31 @@ def disable_event():
     pass
 
 
+#closes a popup when given a popup
+def closepopup(pop):
+    pop.destroy()
+
+
 # def to open a popup for the GUI, exits on button press
-def openapopup(poptext):
+def openapopup(poptext, wait):
     popup = tkinter.Toplevel()
     popup.wm_title("WARNING")
     var = tkinter.IntVar()
-    #popup.geometry("250x250")
+    exitbutton = None
     popup.protocol("WM_DELETE_WINDOW", disable_event)
     Label = tkinter.Label(popup, text=poptext)
-    exitbutton = tkinter.Button(popup, text="OK", command=lambda: var.set(1))
+    if wait: # we want the user to do what they want before the program continues.
+        exitbutton = tkinter.Button(popup, text="OK", command=lambda: var.set(1))
+    else: # we just want this to kill the popup we dont care about what the user wants.
+        exitbutton = tkinter.Button(popup, text="OK", command=lambda: closepopup(popup))
     Label.pack()
     exitbutton.pack()
     popup.resizable(False, False)
     popup.lift()
-    popup.wait_variable(var)
-    print("past wait")
-    popup.destroy()
+    if wait:
+        popup.wait_variable(var)
+        print("past wait")
+        popup.destroy() # destroy the popup after waiting
 
 
 def selectsinners():  # this bot sets the sinners via the console
@@ -60,7 +76,7 @@ def selectsinners():  # this bot sets the sinners via the console
     inity = 341  # y value where sinner cards start
     while 1:
         if not inGUI:  # use the console to prompt for user input if just in script
-            print("Are unwanted sinners already selected? y/n")
+            print("Are unwanted sinners selected? If so please deselect them y/n")
             select = input()
             if select == "y":
                 return
@@ -68,8 +84,9 @@ def selectsinners():  # this bot sets the sinners via the console
                 break
             print("bad input, please only type either y or n")
         else:  # use tkinter to pop up if we're using a gui
-            openapopup("Please make sure all sinners are unselected \n"
-                       "press OK to continue")
+            openapopup("Please make sure unwanted sinners are unselected \n"
+                       "press OK to continue", True)
+            break
 
     # pyautogui.click(initx, inity)
     for sinner in sinners:
@@ -82,18 +99,6 @@ def selectsinners():  # this bot sets the sinners via the console
         pyautogui.moveTo(initx + addx, inity + addy)
         pyautogui.click(initx + addx, inity + addy)
         time.sleep(1)
-
-
-# this def takes in entry boxes from the GUI and loads their values into the sinners array
-def loadinSinners(entries) -> bool:
-    for i in range(6):
-        for j in range(12):
-            if entries[j].get() == i:
-                sinners[i] = j
-    if sinners[0] == 0:
-        print("No sinners selected")
-        return False
-    return True
 
 
 def startbot():  # this starts the main bot, allows user to select sinner, or not
@@ -167,7 +172,7 @@ def infightcheck() -> bool:  # makes sure we're within a fight via 2 unique elem
 # future autoshop function
 def shop():
     if (inGUI):
-        openapopup("Autoshop is disabled, press OK when finishsed")
+        openapopup("Autoshop is disabled, press OK when finishsed", True)
     else:
         print("this still needs to be done, figure it out soon dipshit")
         input("press enter to continue")
@@ -318,10 +323,10 @@ def dotext():
         readthis = cv2.imread("screen.png", cv2.IMREAD_GRAYSCALE)
         text = pytesseract.image_to_string(readthis, config='--psm 6')
         print(text + " <- This is our text")
-        time.sleep(4)
+        time.sleep(.75)
         if "E.G." in text:
             pyautogui.click(1138, 359 + addy)
-            time.sleep(2.5)
+            time.sleep(.5)
             clickonskip()
             break
         else:
@@ -332,7 +337,7 @@ def dotext():
                 print("we are here!")
                 pyautogui.moveTo(1038, 279)
                 pyautogui.click(1038, 279)  # select first option
-                time.sleep(3)
+                time.sleep(1)
                 break
             else:
                 addy = addy + 200  # read the next block
@@ -493,7 +498,7 @@ if __name__ == "__main__":
     while 1:
         do = input("type 1 to just fight, 2 to start the bot")
         if do == "1":
-            openapopup("testtest test")
+            openapopup("testtest test", True)
             print("we're here now!")
             exit(0)
         elif do == "2":
