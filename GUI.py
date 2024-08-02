@@ -4,7 +4,21 @@ import numpy as np, SAVEthetime as s, tkinter as tk
 
 
 def helpstt():
-    s.openapopup("whadda hell", True)
+    s.openapopup("USAGE INFORMATION: SAVEthetime is a Limbus Company Bot made to complete Easy Mirror Dungeons "
+                 "and luxifications\n"
+                 "REQUIREMENTS: Main Screen Resolution must be in 1920 x 1080, Screen Resolution must be on Full Screen,"
+                 "Windowed \n"
+                 "REQUIREMENTS: Tessoract-OCR must be installed for this program to work, Language must be set to English\n"
+                 "In the main window, there are multiple entry boxes placed next to the names of each sinner. Within each entrybox "
+                 "place the selection order, 1 for first selection, 2 for second, ect.\n"
+                 "Once the sinners are selected, hit the button to start the bot and switch to the main Screen\n"
+                 "For just luxification, Make sure to start the luxification, and then hit the button, no sinners need"
+                 " to be selected\n"
+                 "IMPORTANT NOTE: On the first battle of the dungeon, unless the sinner checkbox is marked, you"
+                 "will be prompted to make sure unwanted sinners reamin unselected\n"
+                 "IMPORTANT NOTE: Currently there is no Autoshop feature, all actioned related to shopping or upgrading"
+                 " will need to be done manually.", False)
+
     print("do me soon")
 
 
@@ -68,15 +82,16 @@ def doguibot():  # this is nearly a one to one copy of the main bot in SAVEtheti
         fightck = s.infightcheck()
         egochk = s.grabEGO()
         if not fightck:
-            if not eventck or not egochk:
-                if not s.isvictory():
-                    print("looking around and adjusting zoom")
-                    fail = s.adjustzoom()
-                    if fail and not s.grabEGO():
-                        print("Could not find icon, stopping bot")
-                        return
-                else:
-                    exit(0)  # We won!
+            if not eventck:
+                if not egochk:
+                    if not s.isvictory():
+                        print("looking around and adjusting zoom")
+                        fail = s.adjustzoom()
+                        if fail and not s.grabEGO():
+                            print("Could not find icon, stopping bot")
+                            return
+                    else:
+                        exit(0)  # We won!
             else:
                 print("getting zoom right after event")
                 s.pyautogui.scroll(-1)
@@ -126,7 +141,7 @@ for i in range(4):
         labels[sin].grid(row=j + 2, column=(i * 2))
         entries[sin].grid(row=j + 2, column=(i * 2) + 1)
         sin = sin + 1
-button[0] = tk.Button(window, text="Help", command=lambda: loadsinners(entries))
+button[0] = tk.Button(window, text="Help", command=lambda: helpstt())
 button[1] = tk.Button(window, text="Start Bot", command=lambda: guibuildup(entries, var))
 button[2] = tk.Button(window, text="Do Lux", command=lambda: doluxnow())
 checkme.grid(row=5, column=2, columnspan=3)
