@@ -19,9 +19,8 @@ It'll take a little bit for the GUI to be done. Nothing more than a week though.
 
 MAKE SURE TO BE FULL SCREEN WINDOWED AT 1920x1080 BEFORE STARTING! for now, I'll change some things up later
 
-There's still more than a few kinks to work out with the bot, mainly pertaining to events
+There's still more than a few kinks to work out with the bot, the main one being autoshop, which is going to be happening in the next push, after that is an improvement in how fights are done. after that is making the gui look pretty
 
-I have a star now, I've never been so humbled and so terrified, Im sorry this isn't better than it is. Once I got the main bit working compiling everything into its own little contained thing took more effort than I thought it would.
 
 Autoshop ideas:
 1. Easy autoshop, just buy as much as possible 
@@ -34,7 +33,4 @@ autoupgrade ideas
 
 
 EVENT ISSUES
-1. Mess with CV2 thresholding mroe so that we get a better readout more consistantly.
-
-GUI ISSUES.
-don't wanna until event is fixed :(
+1. Mess with CV2 thresholding mroe so that we get a better readout more consistantly
