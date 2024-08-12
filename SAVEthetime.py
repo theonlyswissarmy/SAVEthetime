@@ -1,20 +1,26 @@
 from PIL import Image, ImageEnhance, ImageFilter, ImageGrab
-import time, pytesseract, pyautogui, keyboard, cv2, os, tkinter
+import time, Communicae, pytesseract, pyautogui, keyboard, cv2, os, tkinter
 
 from pyscreeze import Box
 
 screenwid, screenlen = pyautogui.size()
-
+Comms: Communicae
+finalWAIT = True # Do we wait to choose the final EGO gift?
 inGUI = False  # variable which denotes if we're using the GUI or not
 sinners = [0] * 6  # the sinners we want to use
 sinselected = False
 money = 0
 
 
-#sets  inGUI to value passed in val
+# sets inGUI to value passed in val
 def setinGUI(val: bool):
     global inGUI
     inGUI = val
+
+
+def setCommunicae(comms: Communicae):
+    global Comms
+    Comms = comms
 
 
 # takes in a batch of sinners passsed from somewhere else
@@ -42,31 +48,43 @@ def disable_event():
     pass
 
 
-#closes a popup when given a popup
-def closepopup(pop):
+def isfinalEGO() -> bool:
+    try:
+        pyautogui.locateOnScreen("FinalEGOidentifier.png",confidence=.8)
+        return True
+    except pyautogui.ImageNotFoundException:
+        return False
+
+
+# closes a popup when given a popup, communicates that its no longer open
+def closepopup(pop: tkinter.Toplevel, title: str):
+    global Comms
+    Comms.delwin(title)
     pop.destroy()
 
 
 # def to open a popup for the GUI, exits on button press
-def openapopup(poptext, wait):
+def openapopup(poptext: str, wait: bool, title="WARNING"):
+    global Comms
     popup = tkinter.Toplevel()
-    popup.wm_title("WARNING")
+    Comms.addwin(title, popup)
+    popup.wm_title(title)
     var = tkinter.IntVar()
-    exitbutton = None
     popup.protocol("WM_DELETE_WINDOW", disable_event)
-    Label = tkinter.Label(popup, text=poptext)
-    if wait: # we want the user to do what they want before the program continues.
+    label = tkinter.Label(popup, text=poptext, font=("Arial", 12))
+    if wait:  # we want the user to do what they want before the program continues.
         exitbutton = tkinter.Button(popup, text="OK", command=lambda: var.set(1))
-    else: # we just want this to kill the popup we dont care about what the user wants.
-        exitbutton = tkinter.Button(popup, text="OK", command=lambda: closepopup(popup))
-    Label.pack()
+    else:  # we just want this to kill the popup we dont care about what the user wants.
+        exitbutton = tkinter.Button(popup, text="OK", command=lambda: closepopup(popup, title))
+    label.pack()
     exitbutton.pack()
     popup.resizable(False, False)
     popup.lift()
+    popup.attributes("-topmost", True)  # forces the popup to the top where it can't be missed
+    popup.attributes("-topmost", False)  # we don't care what happens as long as the user sees the popup
     if wait:
         popup.wait_variable(var)
-        print("past wait")
-        popup.destroy() # destroy the popup after waiting
+        closepopup(popup, title)
 
 
 def selectsinners():  # this bot sets the sinners via the console
@@ -74,23 +92,18 @@ def selectsinners():  # this bot sets the sinners via the console
     global sinners
     initx = 434  # x value where sinner cards start
     inity = 341  # y value where sinner cards start
-    while 1:
-        if not inGUI:  # use the console to prompt for user input if just in script
-            print("Are unwanted sinners selected? If so please deselect them y/n")
-            select = input()
-            if select == "y":
-                return
-            elif select == "n":
-                break
-            print("bad input, please only type either y or n")
-        else:  # use tkinter to pop up if we're using a gui
-            openapopup("Please make sure unwanted sinners are unselected \n"
-                       "press OK to continue", True)
-            break
+    if not inGUI:  # use the console to prompt for user input if just in script
+        print("Are unwanted sinners selected? If so please deselect them\n"
+              "press enter to continue")
+        input()
+        print("bad input, please only type either y or n")
+    else:  # use tkinter to pop up if we're using a gui
+        openapopup("Please make sure unwanted sinners are unselected \n"
+                   "press OK to continue", True)
 
     # pyautogui.click(initx, inity)
     for sinner in sinners:
-        addy, addx = 0, 0
+        addy, addx = 0, 0  # offsets for selection
         if (sinner % 6) < sinner:
             addy = 310
             sinner = sinner % 6
@@ -101,7 +114,8 @@ def selectsinners():  # this bot sets the sinners via the console
         time.sleep(1)
 
 
-def startbot():  # this starts the main bot, allows user to select sinner, or not
+def startbot():  # this starts the main bot
+                 # selects sinners, sets relevent variables
     global sinners, sinselected, inGUI
     sincount = [0] * 13
     print("STARTING SAVE THE TIME. INPUT SINNER NUMBERS (type 0 to leave unused) \n")
@@ -143,12 +157,12 @@ def startbot():  # this starts the main bot, allows user to select sinner, or no
     return
 
 
-def upgrade():
+def upgrade():  # autoshop for upgrades
     # not sure what to put here
     return
 
 
-def findclockface(acc) -> Box | None:
+def findclockface(acc) -> Box | None:  # finds the movement icon
     try:
         return pyautogui.locateOnScreen("clockface3.png", confidence=acc)
     except pyautogui.ImageNotFoundException:
@@ -191,14 +205,18 @@ def pthenenter():
 
 # this def is the def that handles simple fights with enemies.
 def mainfight():
+    time.sleep(1)
     pyautogui.moveTo(1789, 121)
+    pixf = pyautogui.pixel(1789, 121)  # fork color
+    pthenenter()  # first pass to grab the RGB values of fork and pause
     time.sleep(1)
     pixp = pyautogui.pixel(1789, 121)  # pause color
-    pixf = (131, 91, 39)  # fork color
-
+    time.sleep(4)
     while 1:
         if keyboard.is_pressed("q"):
             exit(0)
+        pyautogui.click(180, 83)
+        pyautogui.moveTo(1789, 121)
         pthenenter()
         pix = pyautogui.pixel(1789, 121)
         if not pix == pixp and not pix == pixf:  # compare curcolor to others to see if still fight
@@ -208,10 +226,6 @@ def mainfight():
             if not infightcheck():
                 print("DONE FIGHTING")
                 time.sleep(8)
-                pyautogui.click(944, 454)  # extra stuff for ego gift
-                pyautogui.sleep(.5)
-                pyautogui.click(1696, 850)
-                time.sleep(1.5)
                 return
         print("STILL FIGHTING")
 
@@ -230,7 +244,7 @@ def clickhere(res):
     return
 
 
-# gets the event type, 1 for success, 2 for select sinenrs in GUI, 3 for shop in GUI
+# gets the event type and takes action, true if was in event
 def getevent() -> bool:
     global sinselected
     time.sleep(.5)
@@ -239,40 +253,22 @@ def getevent() -> bool:
     print("pix 0 = " + str(pix[0]) + " " + str(pix[1]) + " " + str(pix[2]))
     try:
         # NOTE MAKE SURE SINNERS ARE SELECTED VIA SINSELECTED
-        pyautogui.locateOnScreen("TOBATTLE.png", confidence=.8)
+        pyautogui.locateOnScreen("TOBATTLE.png", confidence=.8)  # locate To Battle button
         if not sinselected:  # we havent slected sinners yet!
             selectsinners()
             sinselected = not sinselected
-        pyautogui.click(1705, 869)
-        time.sleep(10)
-        print("we're fighting?")
+        pyautogui.click(1705, 869)  # starts the fight
+        time.sleep(10)  # loading time,
         mainfight()
     except pyautogui.ImageNotFoundException:
         try:
-            pyautogui.locateOnScreen("eventskip.png", confidence=.8)
+            pyautogui.locateOnScreen("eventskip.png", confidence=.8)  # if skip is present, definite event
             clickonskip()
-            if pyautogui.pixelMatchesColor(1674, 183, (253, 96, 0)):
+            if pyautogui.pixelMatchesColor(1674, 183, (253, 96, 0)):  # money color
                 print("SHOP")
                 shop()
             else:
-                print("EVENT")
-                first = 0;
-                while 1:
-                    match (deteventstage(0)):
-                        case 0:  # we definitely left the event
-                            print("DONE WITH EVENT")
-                            if first == 1:
-                                break
-                            else:
-                                clickonskip()
-                                first = first + 1
-                        case 1:  # in text/choices section
-                            #time.sleep(3)
-                            dotext()
-                        case 2:  # in sinner probabilities
-                            sinprob()
-                        case 3:  # the red button was present
-                            pass
+                doevent()
 
         except pyautogui.ImageNotFoundException:
             print("FAIL")
@@ -281,8 +277,29 @@ def getevent() -> bool:
     return True
 
 
+def doevent():  # completes a text event
+    print("EVENT")
+    first = 0  # debug var, we wait for event end to trigger twice before finally leaving to be sure
+    while 1:
+        match (deteventstage(0)):
+            case 0:  # we definitely left the event
+                print("DONE WITH EVENT")
+                if first == 1:
+                    break
+                else:
+                    clickonskip()
+                    first = first + 1
+            case 1:  # in text/choices section
+                # time.sleep(3)
+                dotext()
+            case 2:  # in sinner probabilities
+                sinprob()
+            case 3:  # the red button was present
+                pyautogui.click(1793, 914)  # clicks continue button
+
+
 def SAVEthetime():
-    # main timeripper func,
+    # main timeripper func, depreciated, every attempt team died
     # IS HE TALKING????, click until he stops
     # use win rate for first three rounds
     # determine how many skills time ripper has
@@ -294,7 +311,8 @@ def SAVEthetime():
     return
 
 
-def deteventstage(ret) -> int:
+def deteventstage(ret) -> int:  # Determines what event stage we're on, 3 for possible finish, 2 for probability
+    # 1 for text option selection
     if eventend():
         print("we should exit now")
         ret = 3
@@ -307,33 +325,32 @@ def deteventstage(ret) -> int:
     return ret
 
 
-def istext() -> bool:
+def istext() -> bool:  # determines if we have to select text options
     try:
-        pyautogui.locateOnScreen("choices.png", confidence=.8)
+        pyautogui.locateOnScreen("choices.png", confidence=.8)  # choices is a constant in every event
         return True
     except pyautogui.ImageNotFoundException:
         return False
 
 
-def dotext():
+def dotext():  # Def that handles the text option selection in events
     addy = 0
     for i in range(3):
         time.sleep(1)
-        pyautogui.screenshot("screen.png", region=(1038, 259 + addy, 700, 160))
-        readthis = cv2.imread("screen.png", cv2.IMREAD_GRAYSCALE)
-        text = pytesseract.image_to_string(readthis, config='--psm 6')
+        pyautogui.screenshot("screen.png", region=(1038, 259 + addy, 700, 160))  # screenshot option
+        readthis = cv2.imread("screen.png", cv2.IMREAD_GRAYSCALE)  # make it readable
+        text = pytesseract.image_to_string(readthis, config='--psm 6')  # read image as bulk
         print(text + " <- This is our text")
-        time.sleep(.75)
         if "E.G." in text:
             pyautogui.click(1138, 359 + addy)
             time.sleep(.5)
-            clickonskip()
+            clickonskip()  # make sure to get past text
             break
         else:
             print("No ego gift found?")
             if keyboard.is_pressed("q"):
                 exit(0)
-            if i == 2:
+            if i == 2:  # only ever reads three options, I don't wanna think about scrolling
                 print("we are here!")
                 pyautogui.moveTo(1038, 279)
                 pyautogui.click(1038, 279)  # select first option
@@ -390,30 +407,65 @@ def sinprob():  # this def handles the part of events where you decide which sin
     return 0  # hopefully we're done with the event probability
 
 
-def eventend() -> bool:
+def eventend() -> bool:  # checks for the presence of the continue button, presses it if present
     if pyautogui.pixelMatchesColor(1692, 885, (160, 50, 35), tolerance=20):
         print("Done?")
-        pyautogui.click(1793, 914)  # it turns out we're done
+        #  pyautogui.click(1793, 914)  # clicks continue button
         return True
     return False
 
 
-def grabEGO() -> bool: # def to grad EGO at the end of fights or a dungeon, mainly hits confimr atm
+# def that located EGOconfirmation and then selects it
+def EGOconfirm() -> bool:
     try:
         res = pyautogui.locateOnScreen("EGOconfirm.png", confidence=.8)
         clickhere(res)
+        return True
     except pyautogui.ImageNotFoundException:
-        try:  # this is really bad form. this does theme packs
-            res = pyautogui.locateOnScreen("starlightgain.png", confidence=.8)
-            pyautogui.moveTo(res[0], res[1])
-            pyautogui.drag(0, 300, 1, button='left')
-        except pyautogui.ImageNotFoundException:
-            return False
-    pyautogui.moveTo(950, 540)
-    return True
+        return False
 
 
-def move(): # this def locates your icon, and moves if it cfan
+def boosterpack():  # this is a def that handles booster packs
+    try:  # this is really bad form. this does theme packs.
+        res = pyautogui.locateOnScreen("starlightgain.png", confidence=.8)
+        pyautogui.moveTo(res[0], res[1])
+        pyautogui.drag(0, 300, 1, button='left')
+    except pyautogui.ImageNotFoundException:
+        return  # right now we just return, wait to see in action before deciding what to do
+
+
+# this def checks for encounter rewards, done if egograb fails
+def encounterreward() -> bool:
+    try:
+        pyautogui.locateOnScreen("encounterreward.png", confidence=.8)
+        pyautogui.click(869, 494)
+        time.sleep(.3)
+        pyautogui.click(1093, 787)
+        time.sleep(5)
+        return True
+    except pyautogui.ImageNotFoundException:
+        return False
+
+
+def grabEGO() -> bool:  # def to grad EGO at the end of fights or a dungeon
+    print("in grabEGO")
+    try:
+        pyautogui.locateOnScreen("EGOgift.png", region=(80, 70, 100, 100), confidence=0.9)
+        print("GIFT FOUND")
+        if finalWAIT == True and isfinalEGO():
+            openapopup("Select the final EGO gift, press OK to continue", True)
+        #try: check for mounting trials, if found prompt user for end of floor behavior
+        pyautogui.click(950, 540)
+        pyautogui.click(1700,865)
+        time.sleep(5)
+        EGOconfirm()
+        print("GIFT CONFIRMED")
+        return True
+    except pyautogui.ImageNotFoundException:
+        return encounterreward() or EGOconfirm()
+
+
+def move():  # this def locates your icon, and moves if it cfan
     print("MOVE")
     res = findclockface(.85)
     if res is None:
@@ -438,7 +490,7 @@ def move(): # this def locates your icon, and moves if it cfan
     return 0
 
 
-def adjustzoom() -> bool: # if the icon hasn't been found we adjust the zoom until we can
+def adjustzoom() -> bool:  # if the icon hasn't been found we adjust the zoom until we can
     for look in range(3):
         pyautogui.moveTo(590 + (400 * look), 540)
         for i in range(6):
@@ -455,8 +507,10 @@ def adjustzoom() -> bool: # if the icon hasn't been found we adjust the zoom unt
     return True
 
 
-def mainbot(): # the main loop for the bot, in GUI
-    startbot()
+def mainbot():  # the main loop for the bot, in GUI
+    global inGUI
+    if not inGUI:
+        startbot()
     time.sleep(5)
     grabEGO()
     fail = True
@@ -476,10 +530,10 @@ def mainbot(): # the main loop for the bot, in GUI
                         fail = adjustzoom()
                         if fail and not egochk:
                             print("Could not find icon, exiting")
-                            exit(0)
+                            return
 
                     else:
-                        exit(0)  # We won!
+                        return  # We won!
             else:
                 print("getting zoom right after event")
                 pyautogui.scroll(-1)
@@ -489,7 +543,7 @@ def mainbot(): # the main loop for the bot, in GUI
             mainfight()
 
 
-def dolux():
+def dolux():  # simple def that prompts the bot to fight continously
     time.sleep(3)
     while 1:
         if infightcheck():
