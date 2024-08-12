@@ -17,7 +17,8 @@ Screen resolution MUST be in 1920 x 1080 and game must be in fullscreen windowed
 
 It'll take a little bit for the GUI to be done. Nothing more than a week though. In it's current state it can go through the mirror dungeon and do fine. 
 
-MAKE SURE TO BE FULL SCREEN WINDOWED AT 1920x1080 BEFORE STARTING! for now, I'll change some things up later
+MAKE SURE TO BE FULL SCREEN WINDOWED AT 1920x1080 BEFORE STARTING!
+
 
 There's still more than a few kinks to work out with the bot, the main one being autoshop, which is going to be happening in the next push, after that is an improvement in how fights are done. after that is making the gui look pretty
 
