@@ -1,29 +1,35 @@
 import tkinter
 
-import numpy as np, SAVEthetime as s, tkinter as tk
+import numpy as np, SAVEthetime as s, tkinter as tk, Communicae
+
+Comms = Communicae.Communicae()
+window = tk.Tk()
 
 
+# displays a help menu
 def helpstt():
-    s.openapopup("USAGE INFORMATION: SAVEthetime is a Limbus Company Bot made to complete Easy Mirror Dungeons "
-                 "and luxifications\n"
-                 "REQUIREMENTS: Main Screen Resolution must be in 1920 x 1080, Screen Resolution must be on Full Screen,"
-                 "Windowed \n"
-                 "REQUIREMENTS: Tessoract-OCR must be installed for this program to work, Language must be set to English\n"
-                 "In the main window, there are multiple entry boxes placed next to the names of each sinner. Within each entrybox "
-                 "place the selection order, 1 for first selection, 2 for second, ect.\n"
-                 "Once the sinners are selected, hit the button to start the bot and switch to the main Screen\n"
-                 "For just luxification, Make sure to start the luxification, and then hit the button, no sinners need"
-                 " to be selected\n"
-                 "IMPORTANT NOTE: On the first battle of the dungeon, unless the sinner checkbox is marked, you"
-                 "will be prompted to make sure unwanted sinners reamin unselected\n"
-                 "IMPORTANT NOTE: Currently there is no Autoshop feature, all actioned related to shopping or upgrading"
-                 " will need to be done manually.", False)
+    GUIpopup("USAGE INFORMATION: SAVEthetime is a Limbus Company Bot made to complete Easy Mirror Dungeons "
+             "and luxifications\n"
+             "REQUIREMENTS: Main Screen Resolution must be in 1920 x 1080, Screen Resolution must be on Full Screen,"
+             "Windowed \n"
+             "REQUIREMENTS: Tessoract-OCR must be installed for this program to work, Language must be set to"
+             " English\n"
+             "In the main window, there are multiple entry boxes placed next to the names of each sinner. "
+             "Within each entrybox "
+             "place the selection order, 1 for first selection, 2 for second, ect.\n"
+             "Once the sinners are selected, hit the button to start the bot and select the game to make it "
+             "active\n"
+             "For just luxification, Make sure to start the luxification, and then hit the button, no sinners need"
+             " to be selected\n"
+             "IMPORTANT NOTE: On the first battle of the dungeon, unless the sinner checkbox is marked, you"
+             "will be prompted to make sure unwanted sinners reamin unselected\n"
+             "IMPORTANT NOTE: Currently there is no Autoshop feature, all actioned related to shopping or upgrading"
+             " will need to be done manually.", "Help")
 
-    print("do me soon")
 
-
-#this def collects sinners from the entires and loads them into SAVEthetime, throws an altert if bad values
+# this def collects sinners from the entires and loads them into SAVEthetime, throws an altert if bad values
 def loadsinners(entries) -> bool:
+    global Comms
     end = False
     sinners = [0] * 6  # these are the inital six sinners we want to use
     bacsin = [-1] * 6  # these are back up sinners that we use if the initial six expire.
@@ -36,11 +42,11 @@ def loadsinners(entries) -> bool:
                 sinners[cnt] = i
                 break
             elif i == 11:  # no solo missions if you wanna use the GUI
-                s.openapopup("Please make sure enough sinners are selected\n"
-                             "at least 6 boxes must have a number from 1 - 6.\n"
-                             "7-12 can be selected for backup if desired", False)
+                GUIpopup("Please make sure enough sinners are selected\n"
+                         "at least 6 boxes must have a number from 1 - 6.\n"
+                         "7-12 can be selected for backup if desired", "Bad Input")
                 return False
-    # sinner backups, todo later
+    # sinner backups, to do later
     # for cnt in range(6): # back up sinners load in, less important, no fail
     #     for i in range(12):
     #         val = entries[i].get()
@@ -57,62 +63,52 @@ def loadsinners(entries) -> bool:
     return True
 
 
-def guibuildup(sinsel, var):  # this is a def to handle the build up to starting the bot, does thigns that only need to be
-    s.setinGUI(True)  # done once
-    if not var.get(): # sinners not already selected
-        print("Check unmarked")
-        s.sinselected = False
-        if not loadsinners(sinsel):
-            return
+# handles general popup protocol for the GUI
+def GUIpopup(text: str, Title: str):
+    if Comms.isopen(Title):
+        pop = Comms.getwin(Title)
+        pop.attributes("-topmost", True)  # forces the popup to the top where it can't be missed
+        pop.attributes("-topmost", False)  # we don't care what happens as long as the user sees the popup
     else:
-        s.sinselected = True
-    s.time.sleep(5)
-    s.grabEGO()
-    doguibot()
+        s.openapopup(text, False, title=Title)  # creates a new window since one doesn't already exist
 
 
-def doguibot():  # this is nearly a one to one copy of the main bot in SAVEthetime, but now its able to handle certain
-    # events
-    fail = True
-    while not s.keyboard.is_pressed('q'):
-        s.move()
-        print("EXITED MOVE")
-        eventck = s.getevent()
-        print("EXITED EVENT")
-        fightck = s.infightcheck()
-        egochk = s.grabEGO()
-        if not fightck:
-            if not eventck:
-                if not egochk:
-                    if not s.isvictory():
-                        print("looking around and adjusting zoom")
-                        fail = s.adjustzoom()
-                        if fail and not s.grabEGO():
-                            print("Could not find icon, stopping bot")
-                            return
-                    else:
-                        exit(0)  # We won!
+# main behavior for starting the bot
+def START(sel: int, entries=None, var=None, othervar=None):
+    #GUIpopup("STARTING THE BOT IN 5 SECONDS\n"
+             #"MAKE SURE THE GAME IS FULLSCREEN WINDOWED, ACTIVE, AND ON THE MAIN MONITOR\n", "STARTING")
+    match sel:
+        case 1:
+            s.setinGUI(True)  # done once
+            if not var.get():  # sinners not already selected
+                print("Check unmarked")
+                s.sinselected = False
+                if not loadsinners(entries):
+                    return
             else:
-                print("getting zoom right after event")
-                s.pyautogui.scroll(-1)
-                s.pyautogui.scroll(1)
-        else:  # we're in a fight
-            s.mainfight()
+                print("sinselected set to true")
+                s.sinselected = True
+            if finvar:
+                s.finalWAIT = True
+            else:
+                s.finalWAIT = False
 
-
-def doluxnow():
-    s.dolux()
+            s.mainbot()
+        case 2:
+            s.dolux()
 
 
 # this is a value verificiation def, throws false if not good, test is input type, text is current value
 def valent(text, test):
+    global window, Comms
+
     print("text is " + text + " test is " + test)
     if int(test) == 1 or int(test) == 0:  # if inserting into text
         print("Past insert")
         if str(text).isdigit() and -1 < int(text) < 13 or text == "":
             print("here")
             return True
-        s.openapopup("Invalid input, numbers from 1-12 only", False)
+        GUIpopup("Invalid input, numbers from 1-12 only", "Invalid Input")
         return False
     return True
 
@@ -120,12 +116,14 @@ def valent(text, test):
 sinnames = ["1. Yi Sang:", "2. Faust:", "3. Don Quixote:",
             "4. Ryoshu:", "5. Meursault:", "6. Hong Lu:", "7.Heathcliffe:",
             "8. Ishmael:", "9. Rodion:", "10. Sinclair:", "11. Outis:", "12. Gregor:"]
-window = tk.Tk()
+s.setCommunicae(Comms)  # links the comms between STT and GUI
+finvar = tk.BooleanVar() # var for waiting at final floor EGO gift
 var = tk.BooleanVar()
 window.title("SAVEthetime")
 window.resizable(False, False)
 Instruction = tk.Label(text="Input numbers in order of sinner selection (1 to select first, ect.)")
-checkme = tk.Checkbutton(window, text="sinners already selected", variable=var)
+checkme = tk.Checkbutton(window, text="Sinners already selected?", variable=var)
+checkmetoo = tk.Checkbutton(window, text="Manually select final floor EGO gift?", variable=finvar)
 button = [0 for i in range(3)]
 Instruction.grid(row=0, column=0, columnspan=10, padx=100)
 entries = [0 for i in range(12)]
@@ -142,9 +140,10 @@ for i in range(4):
         entries[sin].grid(row=j + 2, column=(i * 2) + 1)
         sin = sin + 1
 button[0] = tk.Button(window, text="Help", command=lambda: helpstt())
-button[1] = tk.Button(window, text="Start Bot", command=lambda: guibuildup(entries, var))
-button[2] = tk.Button(window, text="Do Lux", command=lambda: doluxnow())
-checkme.grid(row=5, column=2, columnspan=3)
+button[1] = tk.Button(window, text="Start Bot", command=lambda: START(1, entries, var, finvar))
+button[2] = tk.Button(window, text="Do Lux", command=lambda: START(2))
+checkme.grid(row=5, column=0, columnspan=3)
+checkmetoo.grid(row=5, column=3, columnspan=4)
 button[0].grid(row=6, column=2)
 button[1].grid(row=6, column=3)
 button[2].grid(row=6, column=4)
